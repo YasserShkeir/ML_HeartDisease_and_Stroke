@@ -3,3 +3,6 @@ pandas
 streamlit
 seaborn
 matplotlib.pyplot
+RandomForestClassifier
+accuracy_score
+train_test_split
