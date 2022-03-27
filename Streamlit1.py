@@ -69,7 +69,7 @@ def heart_disease_function():
 
     st.subheader('1. Dataset')
 
-    df = pd.read_csv('Part 1 HeartDisease/heart.csv')
+    df = pd.read_csv('heart.csv')
 
     st.markdown('**1.1. Glimpse of dataset**')
 
@@ -142,7 +142,7 @@ def stroke_function():
 
     st.subheader('1. Dataset')
 
-    df = pd.read_csv('Part 2 Stroke/stroke-data.csv')
+    df = pd.read_csv('stroke-data.csv')
     del df["id"]
     df = df.dropna()
     df = df[df['age'] >= 2]
