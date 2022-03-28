@@ -5,24 +5,25 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split as tts
 
 # Done by: Yasser Shkeir
-# Final Version of the app (V2.0)
+# Final Version of the Scikit Model app (V2.0)
 
 #Title of web app + wide layout instead of centered
 st.set_page_config(page_title='Heart Disease App', layout='wide')
 
-# Headers
+# Headers in page
 st.write("""
 # Heart Disease Prediction
 # 
 # Random Forest Classifier Approach
 # """)
 
-# store a boolean for the heart disease test so that we wait for all inputs
+# store a boolean for the heart disease and stroke tests that changes to true only if the user presses the buttons for the tests
 if 'bool_heart_disease' not in st.session_state:
     st.session_state['bool_heart_disease']=False
 
 if 'bool_stroke' not in st.session_state:
     st.session_state['bool_stroke']=False
+
 
 st.sidebar.write('Please choose the test type:')
 
@@ -30,13 +31,13 @@ st.sidebar.write('Please choose the test type:')
 col1, col2 = st.sidebar.columns(2)
 
 with col1:
-    #if stroke option is chosen, remove stroke content and display hd content
+    #if stroke option is chosen, remove stroke content and display heart disease content
     if st.button('* Heart Disease *'):
         st.session_state['bool_heart_disease']=True
         st.session_state['bool_stroke']=False
 
 with col2:
-    #if stroke option is chosen, remove hd content and display stroke content
+    #if stroke option is chosen, remove heart disease content and display stroke content
     if st.button('* * * Stroke * * *'):
         st.session_state['bool_stroke']=True
         st.session_state['bool_heart_disease']=False
@@ -195,6 +196,7 @@ def stroke_function():
         msg = 'There is a %' + str(round(rf.predict_proba(predict_df)[0][0] *100, 2)) + ' chance patient will have/had a stroke'
         st.error(msg)
 
+# If the button is pressed, the boolean stored in the session state changes to true, which in this case we call the function
 if st.session_state['bool_heart_disease']:
     heart_disease_function()
 
