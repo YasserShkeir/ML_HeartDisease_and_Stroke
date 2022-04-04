@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split as tts
 
 # Done by: Yasser Shkeir
 # Final Version of the Scikit Model app (V2.0)
+# Need to improve UI
 
 #Title of web app + wide layout instead of centered
 st.set_page_config(page_title='Heart Disease App', layout='wide')
