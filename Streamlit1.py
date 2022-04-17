@@ -24,7 +24,7 @@ if 'bool_stroke' not in st.session_state:
     st.session_state['bool_stroke']=False
 
 # Create two Columns, use only one to the left for better aesthetics
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     chosen_test = st.selectbox('Please choose the test type:', ('', 'Heart Disease', 'Stroke'))
@@ -83,39 +83,49 @@ def heart_disease_function():
     st.write('Accuracy Score:')
     st.info(accuracy_score(y_test, y_pred))
 
-    test_age=st.text_input('Age:', max_chars=3)
-    test_sex=st.radio('Sex:',options=['M','F'])
-    test_CPT=st.select_slider('Chest Pain Type:',options=['TA', 'ATA', 'NAP', 'ASY'])
-    test_RBP=st.text_input('Resting Blood Pressure:', max_chars=3)
-    test_Cholesterol=st.text_input('Cholesterol:', max_chars=3)
-    test_FBS=st.select_slider('Fasting Blood Sugar:', options=[0,1])
-    test_RECG=st.select_slider('Resting Electrocardiogram:', options=['Normal', 'ST', 'LVH'])
-    test_MHR=st.text_input('Maximum Heart Rate:', max_chars=3)
-    test_ExA=st.radio('Exercise Angina:', options=['N','Y'])
-    test_OPk=st.slider('Old Peak: ', -4.0, 7.0, 0.0, 0.1)
-    test_STS=st.select_slider('ST_Slope:', options=['Up', 'Flat', 'Down'])
-    predict_data={'Age':[test_age],
-                'Sex':[test_sex],
-                'ChestPainType':[test_CPT],
-                'RestingBP':[test_RBP],
-                'Cholesterol':[test_Cholesterol],
-                'FastingBS':[test_FBS],
-                'RestingECG':[test_RECG],
-                'MaxHR':[test_MHR],
-                'ExerciseAngina':[test_ExA],
-                'Oldpeak':[test_OPk],
-                'ST_Slope':[test_STS]}    
+    ### INPUT DATA SECTION ###
+    with st.expander('Prediction Section'):
+        with st.form('Input Data Form'):
+            # Create 3 columns for the inputs to be aligned
+            inp_col1, inp_col2, inp_col3 = st.columns(3)
+            with inp_col1:
+                test_age=st.text_input('Age:', max_chars=3)
+                test_RBP=st.text_input('Resting Blood Pressure:', max_chars=3)
+                test_Cholesterol=st.text_input('Cholesterol:', max_chars=3)
+                test_MHR=st.text_input('Maximum Heart Rate:', max_chars=3)
 
-    predict_df= pd.DataFrame(predict_data)
-    
-    predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x + 2.6)
-    predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x * 10)
-    predict_df = predict_df.replace(cleanup_vals)
+            with inp_col2:
+                test_CPT=st.select_slider('Chest Pain Type:',options=['TA', 'ATA', 'NAP', 'ASY'])
+                test_RECG=st.select_slider('Resting Electrocardiogram:', options=['Normal', 'ST', 'LVH'])
+                test_STS=st.select_slider('ST_Slope:', options=['Up', 'Flat', 'Down'])
+                test_OPk=st.slider('Old Peak: ', -4.0, 7.0, 0.0, 0.1)
 
-    st.write('Prediction Score:') 
-    if st.button('Confirm'):
-        msg = 'There is a %' + str(round(rf.predict_proba(predict_df)[0][1] *100, 2)) + ' patient has a heart disease'
-        st.error(msg)
+            with inp_col3:
+                test_FBS=st.radio('Fasting Blood Sugar:', options=[0,1])
+                test_sex=st.radio('Sex:',options=['M','F'])
+                test_ExA=st.radio('Exercise Angina:', options=['N','Y'])
+        
+            predict_data={'Age':[test_age],
+                        'Sex':[test_sex],
+                        'ChestPainType':[test_CPT],
+                        'RestingBP':[test_RBP],
+                        'Cholesterol':[test_Cholesterol],
+                        'FastingBS':[test_FBS],
+                        'RestingECG':[test_RECG],
+                        'MaxHR':[test_MHR],
+                        'ExerciseAngina':[test_ExA],
+                        'Oldpeak':[test_OPk],
+                        'ST_Slope':[test_STS]}    
+
+            predict_df= pd.DataFrame(predict_data)
+            
+            predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x + 2.6)
+            predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x * 10)
+            predict_df = predict_df.replace(cleanup_vals)
+
+            if st.form_submit_button('Confirm'):
+                msg = 'There is a %' + str(round(rf.predict_proba(predict_df)[0][1] *100, 2)) + ' patient has a heart disease'
+                st.error(msg)
 
 def stroke_function():
     test_age=st.sidebar.text_input('Age:', max_chars=3)
