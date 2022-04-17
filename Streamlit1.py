@@ -23,21 +23,20 @@ if 'bool_heart_disease' not in st.session_state:
 if 'bool_stroke' not in st.session_state:
     st.session_state['bool_stroke']=False
 
-
-st.write('Please choose the test type:')
+chosen_test = st.selectbox('Please choose the test type:', ('', 'Heart Disease', 'Stroke'))
 
 # Create two Columns for the different test types in the sidebar
 col1, col2 = st.columns(2)
 
 with col1:
     #if stroke option is chosen, remove stroke content and display heart disease content
-    if st.button('* Heart Disease *'):
+    if chosen_test == 'Heart Disease':
         st.session_state['bool_heart_disease']=True
         st.session_state['bool_stroke']=False
 
 with col2:
     #if stroke option is chosen, remove heart disease content and display stroke content
-    if st.button('* * * Stroke * * *'):
+    if chosen_test == 'Stroke':
         st.session_state['bool_stroke']=True
         st.session_state['bool_heart_disease']=False
 
