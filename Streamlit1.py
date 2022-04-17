@@ -14,8 +14,6 @@ st.set_page_config(page_title='Heart Disease App', layout='wide')
 # Headers in page
 st.write("""
 # Heart Disease Prediction
-# 
-# Random Forest Classifier Approach
 # """)
 
 # store a boolean for the heart disease and stroke tests that changes to true only if the user presses the buttons for the tests
@@ -26,10 +24,10 @@ if 'bool_stroke' not in st.session_state:
     st.session_state['bool_stroke']=False
 
 
-st.sidebar.write('Please choose the test type:')
+st.write('Please choose the test type:')
 
 # Create two Columns for the different test types in the sidebar
-col1, col2 = st.sidebar.columns(2)
+col1, col2 = st.columns(2)
 
 with col1:
     #if stroke option is chosen, remove stroke content and display heart disease content
