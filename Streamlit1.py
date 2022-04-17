@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+import plotly.express as px
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split as tts
@@ -42,15 +43,34 @@ with col1:
         st.session_state['bool_heart_disease']=False   
 
 def heart_disease_function():
-    st.subheader('1. Dataset')
-
     df = pd.read_csv('heart.csv')
 
+    st.subheader('1. Dataset')
     st.markdown('**1.1. Glimpse of dataset**')
+    st.write(df.iloc[0:99])
 
-    st.write(df)
+    ### Data Analysis Section ###
+    st.markdown('**1.2. Data Analysis Section**')
+    df2 = df
 
-    cleanup_vals = {"Sex":     {"M": 0, "F": 1},
+    df2['HeartDisease'] = df2['HeartDisease'].replace([0],'No')
+    df2['HeartDisease'] = df2['HeartDisease'].replace([1],'Yes')
+
+    df2['Count'] = 1
+
+    da_col1, da_col2 = st.columns(2)
+
+    with da_col1:
+        fig = px.histogram(df2, x='Sex', y='Count', title='Number of people with or without a Heart Disease', color='HeartDisease', barmode='group')
+        st.plotly_chart(fig)
+
+
+    with da_col1:
+        st.write(1)
+
+    ###
+
+    cleanup_vals = {"Sex": {"M": 0, "F": 1},
                     "ChestPainType": {"TA": 0, "ATA": 1, "NAP": 2, "ASY": 3},
                     "RestingECG": {"Normal": 0, "ST": 1, "LVH": 2},
                     "ExerciseAngina" : {"Y": 0, "N": 1},
@@ -58,21 +78,20 @@ def heart_disease_function():
 
     df['Oldpeak']=df['Oldpeak'].apply(lambda x: x + 2.6)
     df['Oldpeak']=df['Oldpeak'].apply(lambda x: x * 10)
-
     df = df.replace(cleanup_vals)
 
     y=df['HeartDisease']
     x=df.drop('HeartDisease',axis=1)
 
+    x_train,x_test,y_train,y_test=tts(x,y,test_size=0.3)
+    
     st.markdown('**1.2. Data Splits**')
     st.write('Training Set')
-    st.info(x.shape)
+    st.info(x_train.shape)
 
     st.markdown('**1.3. Variable Details**')
     st.write('Data Columns')
     st.info(list(x.columns))
-
-    x_train,x_test,y_train,y_test=tts(x,y,test_size=0.3)
 
     rf = RandomForestClassifier(n_estimators=250, random_state=0)
     rf.fit(x_train, y_train)
