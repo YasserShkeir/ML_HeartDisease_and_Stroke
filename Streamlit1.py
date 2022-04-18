@@ -50,23 +50,23 @@ def heart_disease_function():
     st.write(df.iloc[0:99])
 
     ### Data Analysis Section ###
+    st.write(' ')
     st.markdown('**1.2. Data Analysis Section**')
     df2 = df
 
     df2['HeartDisease'] = df2['HeartDisease'].replace([0],'No')
     df2['HeartDisease'] = df2['HeartDisease'].replace([1],'Yes')
-
     df2['Count'] = 1
 
     da_col1, da_col2 = st.columns(2)
 
     with da_col1:
-        fig = px.histogram(df2, x='Sex', y='Count', title='Number of people with or without a Heart Disease', color='HeartDisease', barmode='group')
+        fig = px.histogram(df2, x='Sex', y='Count', title='Number of people with or without a Heart Disease based on Sex Group', color='HeartDisease', barmode='group')
         st.plotly_chart(fig)
 
-
-    with da_col1:
-        st.write(1)
+    with da_col2:
+        fig = px.histogram(df2, x='Age', y='Count', title='Number of people with or without a Heart Disease based on Age Group', color='HeartDisease', barmode='group')
+        st.plotly_chart(fig)
 
     ###
 
