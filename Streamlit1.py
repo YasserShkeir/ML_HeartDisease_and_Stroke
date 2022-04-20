@@ -46,12 +46,16 @@ def heart_disease_function():
     df = pd.read_csv('heart.csv')
 
     st.subheader('1. Dataset')
-    st.markdown('**1.1. Glimpse of dataset**')
-    st.write(df.iloc[0:99])
+    
+    # ### Data Cleaning
+    new_df = df[df['Cholesterol'] != 0]
+    new_df = new_df[new_df['RestingBP'] != 0]
+    df['Cholesterol'] = df['Cholesterol'].replace(0, new_df['Cholesterol'].mean())
+    df['RestingBP'] = df['RestingBP'].replace(0, new_df['RestingBP'].mean())
+    ###
 
     ### Data Analysis Section ###
-    st.write(' ')
-    st.markdown('**1.2. Data Analysis Section**')
+    
     df2 = df
 
     df2['HeartDisease'] = df2['HeartDisease'].replace([0],'No')
@@ -61,12 +65,15 @@ def heart_disease_function():
     da_col1, da_col2 = st.columns(2)
 
     with da_col1:
-        fig = px.histogram(df2, x='Sex', y='Count', title='Number of people with or without a Heart Disease based on Sex Group', color='HeartDisease', barmode='group')
-        st.plotly_chart(fig)
+        st.write('1.1. Dataset Sample')
+        st.dataframe(df2, height=550)
 
     with da_col2:
-        fig = px.histogram(df2, x='Age', y='Count', title='Number of people with or without a Heart Disease based on Age Group', color='HeartDisease', barmode='group')
-        st.plotly_chart(fig)
+        st.write('1.2. Data Analysis Section')
+        selection = st.selectbox('Choose your chart selection:', ('','Age','Sex','ChestPainType','RestingBP','Cholesterol','FastingBS','RestingECG','MaxHR','ExerciseAngina','Oldpeak','ST_Slope'))
+        if selection != '':
+            fig = px.histogram(df2, x=selection, y='Count', title='Number of people with or without a Heart Disease based on {}'.format(selection), color='HeartDisease', barmode='group')
+            st.plotly_chart(fig)
 
     ###
 
@@ -85,66 +92,77 @@ def heart_disease_function():
 
     x_train,x_test,y_train,y_test=tts(x,y,test_size=0.3)
     
-    st.markdown('**1.2. Data Splits**')
-    st.write('Training Set')
-    st.info(x_train.shape)
+    # st.markdown('**1.2. Data Splits**')
+    # st.write('Training Set')
+    # st.info(x_train.shape)
 
-    st.markdown('**1.3. Variable Details**')
-    st.write('Data Columns')
-    st.info(list(x.columns))
+    # st.markdown('**1.3. Variable Details**')
+    # st.write('Data Columns')
+    # st.info(list(x.columns))
 
     rf = RandomForestClassifier(n_estimators=250, random_state=0)
     rf.fit(x_train, y_train)
 
-    st.subheader('2. Model Performance')
+    st.subheader('2. Model ')
+    ml_col1, ml_col2, ml_col3, ml_col4 = st.columns(4)
 
-    y_pred = rf.predict(x_test)
-    st.write('Accuracy Score:')
-    st.info(accuracy_score(y_test, y_pred))
+    with ml_col1:
+        st.write('Length of Training Dataset')
+        st.info(len(x_train))
+
+    with ml_col2:
+        st.write('Length of Testing Dataset')
+        st.info(len(x_test))
+
+    with ml_col3:
+        y_pred = rf.predict(x_test)
+        st.write('Accuracy Score:')
+        st.info(accuracy_score(y_test, y_pred))
 
     ### INPUT DATA SECTION ###
-    with st.expander('Prediction Section'):
-        with st.form('Input Data Form'):
-            # Create 3 columns for the inputs to be aligned
-            inp_col1, inp_col2, inp_col3 = st.columns(3)
-            with inp_col1:
-                test_age=st.text_input('Age:', max_chars=3)
-                test_RBP=st.text_input('Resting Blood Pressure:', max_chars=3)
-                test_Cholesterol=st.text_input('Cholesterol:', max_chars=3)
-                test_MHR=st.text_input('Maximum Heart Rate:', max_chars=3)
+    st.subheader('3. Data Input Prediction ')
+    with st.form(''):
+        # Create 3 columns for the inputs to be aligned
+        inp_col1, inp_col2, inp_col3 = st.columns(3)
+        with inp_col1:
+            test_age=st.text_input('Age:', max_chars=3, value=0)
+            test_RBP=st.text_input('Resting Blood Pressure:', max_chars=3, value=0)
+            test_Cholesterol=st.text_input('Cholesterol:', max_chars=3, value=0)
+            test_MHR=st.text_input('Maximum Heart Rate:', max_chars=3, value=0)
 
-            with inp_col2:
-                test_CPT=st.select_slider('Chest Pain Type:',options=['TA', 'ATA', 'NAP', 'ASY'])
-                test_RECG=st.select_slider('Resting Electrocardiogram:', options=['Normal', 'ST', 'LVH'])
-                test_STS=st.select_slider('ST_Slope:', options=['Up', 'Flat', 'Down'])
-                test_OPk=st.slider('Old Peak: ', -4.0, 7.0, 0.0, 0.1)
+        with inp_col2:
+            test_CPT=st.select_slider('Chest Pain Type:',options=['TA', 'ATA', 'NAP', 'ASY'])
+            test_RECG=st.select_slider('Resting Electrocardiogram:', options=['Normal', 'ST', 'LVH'])
+            test_STS=st.select_slider('ST_Slope:', options=['Up', 'Flat', 'Down'])
+            test_OPk=st.slider('Old Peak: ', -4.0, 7.0, 0.0, 0.1)
 
-            with inp_col3:
-                test_FBS=st.radio('Fasting Blood Sugar:', options=[0,1])
-                test_sex=st.radio('Sex:',options=['M','F'])
-                test_ExA=st.radio('Exercise Angina:', options=['N','Y'])
+        with inp_col3:
+            test_FBS=st.radio('Fasting Blood Sugar:', options=[0,1])
+            test_sex=st.radio('Sex:',options=['M','F'])
+            test_ExA=st.radio('Exercise Angina:', options=['N','Y'])
+    
+        predict_data={'Age':[test_age],
+                    'Sex':[test_sex],
+                    'ChestPainType':[test_CPT],
+                    'RestingBP':[test_RBP],
+                    'Cholesterol':[test_Cholesterol],
+                    'FastingBS':[test_FBS],
+                    'RestingECG':[test_RECG],
+                    'MaxHR':[test_MHR],
+                    'ExerciseAngina':[test_ExA],
+                    'Oldpeak':[test_OPk],
+                    'ST_Slope':[test_STS]}
         
-            predict_data={'Age':[test_age],
-                        'Sex':[test_sex],
-                        'ChestPainType':[test_CPT],
-                        'RestingBP':[test_RBP],
-                        'Cholesterol':[test_Cholesterol],
-                        'FastingBS':[test_FBS],
-                        'RestingECG':[test_RECG],
-                        'MaxHR':[test_MHR],
-                        'ExerciseAngina':[test_ExA],
-                        'Oldpeak':[test_OPk],
-                        'ST_Slope':[test_STS]}    
+        predict_df= pd.DataFrame(predict_data)
+        st.write(predict_df)
 
-            predict_df= pd.DataFrame(predict_data)
-            
-            predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x + 2.6)
-            predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x * 10)
-            predict_df = predict_df.replace(cleanup_vals)
+        predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x + 2.6)
+        predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x * 10)
+        predict_df = predict_df.replace(cleanup_vals)
 
-            if st.form_submit_button('Confirm'):
-                msg = 'There is a %' + str(round(rf.predict_proba(predict_df)[0][1] *100, 2)) + ' patient has a heart disease'
-                st.error(msg)
+        if st.form_submit_button('Confirm'):
+            msg = 'There is a % {} patient has a heart disease'
+            st.error(msg)
 
 def stroke_function():
     test_age=st.sidebar.text_input('Age:', max_chars=3)
