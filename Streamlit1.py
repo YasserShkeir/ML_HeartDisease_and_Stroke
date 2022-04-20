@@ -140,8 +140,9 @@ def heart_disease_function():
             test_FBS=st.radio('Fasting Blood Sugar:', options=[0,1])
             test_sex=st.radio('Sex:',options=['M','F'])
             test_ExA=st.radio('Exercise Angina:', options=['N','Y'])
-    
-        predict_data={'Age':[test_age],
+
+        if st.form_submit_button('Confirm'):
+            predict_data={'Age':[test_age],
                     'Sex':[test_sex],
                     'ChestPainType':[test_CPT],
                     'RestingBP':[test_RBP],
@@ -152,17 +153,16 @@ def heart_disease_function():
                     'ExerciseAngina':[test_ExA],
                     'Oldpeak':[test_OPk],
                     'ST_Slope':[test_STS]}
-        
-        predict_df= pd.DataFrame(predict_data)
-        st.write(predict_df)
+            predict_df= pd.DataFrame(predict_data)
+            st.write(predict_df)
 
-        predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x + 2.6)
-        predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x * 10)
-        predict_df = predict_df.replace(cleanup_vals)
-
-        if st.form_submit_button('Confirm'):
-            msg = 'There is a % {} patient has a heart disease'
+            predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x + 2.6)
+            predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x * 10)
+            predict_df = predict_df.replace(cleanup_vals)
+            msg = 'There is a % {} patient has a heart disease'.format(round(rf.predict_proba(predict_df)[0][1] *100, 2))
             st.error(msg)
+    
+        
 
 def stroke_function():
     test_age=st.sidebar.text_input('Age:', max_chars=3)
