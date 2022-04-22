@@ -66,7 +66,7 @@ def heart_disease_function():
 
     with da_col1:
         st.write('1.1. Dataset Sample')
-        st.dataframe(df2, height=550)
+        st.dataframe(df2.drop('Count', axis=1), height=550)
 
     with da_col2:
         st.write('1.2. Data Analysis Section')
@@ -86,6 +86,7 @@ def heart_disease_function():
     df['Oldpeak']=df['Oldpeak'].apply(lambda x: x + 2.6)
     df['Oldpeak']=df['Oldpeak'].apply(lambda x: x * 10)
     df = df.replace(cleanup_vals)
+    df = df.drop('Count', axis=1)
 
     y=df['HeartDisease']
     x=df.drop('HeartDisease',axis=1)
@@ -121,8 +122,9 @@ def heart_disease_function():
 
     ### INPUT DATA SECTION ###
     st.subheader('3. Data Input Prediction ')
-    with st.form(''):
-        # Create 3 columns for the inputs to be aligned
+    
+    # Create 3 columns for the inputs to be aligned
+    with st.form(key='input form'):
         inp_col1, inp_col2, inp_col3 = st.columns(3)
         with inp_col1:
             test_age=st.text_input('Age:', max_chars=3, value=0)
@@ -141,8 +143,7 @@ def heart_disease_function():
             test_sex=st.radio('Sex:',options=['M','F'])
             test_ExA=st.radio('Exercise Angina:', options=['N','Y'])
 
-        submitted = st.form_submit_button('Confirm')
-        if submitted:
+        if st.form_submit_button('Confirm'):
             predict_data={'Age':[test_age],
                     'Sex':[test_sex],
                     'ChestPainType':[test_CPT],
@@ -160,10 +161,9 @@ def heart_disease_function():
             predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x + 2.6)
             predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x * 10)
             predict_df = predict_df.replace(cleanup_vals)
+            st.write(predict_df)
             msg = 'There is a % {} patient has a heart disease'.format(round(rf.predict_proba(predict_df)[0][1] *100, 2))
-            st.error(msg)
-    
-        
+            st.error(msg)     
 
 def stroke_function():
     test_age=st.sidebar.text_input('Age:', max_chars=3)
