@@ -62,6 +62,10 @@ def heart_disease_function():
     df2['HeartDisease'] = df2['HeartDisease'].replace([1],'Yes')
     df2['Count'] = 1
 
+    df2 = df2.sort_values(
+        by=['HeartDisease'],
+        ascending=True).iloc[0:len(df2[df2['HeartDisease']=='No'])*2]
+
     da_col1, da_col2 = st.columns(2)
 
     with da_col1:
@@ -70,7 +74,7 @@ def heart_disease_function():
 
     with da_col2:
         st.write('1.2. Data Analysis Section')
-        selection = st.selectbox('Choose your chart selection:', (df2.columns[0:-2].to_list()))
+        selection = st.selectbox('Choose your chart selection:', (df2.columns[0:-1].to_list()))
         if selection != '':
             fig = px.histogram(df2, x=selection, y='Count', title='Count of people with or without a Heart Disease based on {}'.format(selection), color='HeartDisease', barmode='group')
             st.plotly_chart(fig)
