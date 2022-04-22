@@ -247,9 +247,9 @@ def stroke_function():
     with st.form(key='input form'):
         inp_col1, inp_col2, inp_col3 = st.columns(3)
         with inp_col1:
-            test_age=st.text_input('Age:', max_chars=3)
-            test_Avg_GlucLvl=st.text_input('Average Glucose Level:', max_chars=6)
-            test_BMI=st.text_input('BMI:', max_chars=4)
+            test_age=st.text_input('Age:', max_chars=3, value=0)
+            test_Avg_GlucLvl=st.text_input('Average Glucose Level:', max_chars=6, value=0)
+            test_BMI=st.text_input('BMI:', max_chars=4, value=0)
 
         with inp_col2:
             test_Hypertension=st.select_slider('Hypertension: (0 for no hypertension, 1 for hypertension)',options=[0,1])
