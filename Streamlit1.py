@@ -10,11 +10,11 @@ from sklearn.model_selection import train_test_split as tts
 # Need to improve UI
 
 #Title of web app + wide layout instead of centered
-st.set_page_config(page_title='Heart Disease App', layout='wide')
+st.set_page_config(page_title='Heart Disease and Stroke App', layout='wide')
 
 # Headers in page
 st.write("""
-# Heart Disease Prediction
+# Heart Disease and Stroke Prediction
 # """)
 
 # store a boolean for the heart disease and stroke tests that changes to true only if the user presses the buttons for the tests
@@ -70,9 +70,9 @@ def heart_disease_function():
 
     with da_col2:
         st.write('1.2. Data Analysis Section')
-        selection = st.selectbox('Choose your chart selection:', ('','Age','Sex','ChestPainType','RestingBP','Cholesterol','FastingBS','RestingECG','MaxHR','ExerciseAngina','Oldpeak','ST_Slope'))
+        selection = st.selectbox('Choose your chart selection:', (df2.columns[0:-2].to_list()))
         if selection != '':
-            fig = px.histogram(df2, x=selection, y='Count', title='Number of people with or without a Heart Disease based on {}'.format(selection), color='HeartDisease', barmode='group')
+            fig = px.histogram(df2, x=selection, y='Count', title='Count of people with or without a Heart Disease based on {}'.format(selection), color='HeartDisease', barmode='group')
             st.plotly_chart(fig)
 
     ###
@@ -156,50 +156,47 @@ def heart_disease_function():
                     'Oldpeak':[test_OPk],
                     'ST_Slope':[test_STS]}
             predict_df= pd.DataFrame(predict_data)
-            st.write(predict_df)
+            # st.write(predict_df)
 
             predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x + 2.6)
             predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x * 10)
             predict_df = predict_df.replace(cleanup_vals)
-            st.write(predict_df)
             msg = 'There is a % {} patient has a heart disease'.format(round(rf.predict_proba(predict_df)[0][1] *100, 2))
             st.error(msg)     
 
 def stroke_function():
-    test_age=st.sidebar.text_input('Age:', max_chars=3)
-    test_sex=st.sidebar.radio('Sex:',options=['Male','Female'])
-    test_Hypertension=st.sidebar.select_slider('Hypertension: (0 for no hypertension, 1 for hypertension)',options=[0,1])
-    test_Heart_Disease=st.sidebar.select_slider('Heart Disease: (0 for no Heart Disease, 1 for Heart Disease)',options=[0,1])
-    test_Ever_Married=st.sidebar.select_slider('Ever Married:', options=['No','Yes'])
-    test_Work_Type=st.sidebar.select_slider('Work Type:', options=['Never_worked','children', 'Self-employed', 'Private', 'Govt_job'])
-    test_Residence_Type=st.sidebar.select_slider('Residence Type:', options=['Urban', 'Rural'])
-    test_Avg_GlucLvl=st.sidebar.text_input('Average Glucose Level:', max_chars=6)
-    test_BMI=st.sidebar.text_input('BMI:', max_chars=4)
-    test_Smoking_Status=st.sidebar.select_slider('Smoking Status:', options=['Unknown', 'never smoked', 'formerly smoked', 'smokes'])
-    predict_data={'age':[test_age],
-                'gender':[test_sex],
-                'hypertension':[test_Hypertension],
-                'heart_disease':[test_Heart_Disease],
-                'ever_married':[test_Ever_Married],
-                'work_type':[test_Work_Type],
-                'Residence_type':[test_Residence_Type],
-                'avg_glucose_level':[test_Avg_GlucLvl],
-                'bmi':[test_BMI],
-                'smoking_status':[test_Smoking_Status]}    
-
-    predict_df= pd.DataFrame(predict_data)
+    df = pd.read_csv('stroke-data.csv')
 
     st.subheader('1. Dataset')
-
-    df = pd.read_csv('stroke-data.csv')
+    
+    #### Data Cleaning
     del df["id"]
     df = df.dropna()
     df = df[df['age'] >= 2]
     df = df[df['gender'] != 'Other']
+    ###
 
-    st.markdown('**1.1. Glimpse of dataset**')
+    df2 = df
+    df2['stroke'] = df2['stroke'].replace([0],'No')
+    df2['stroke'] = df2['stroke'].replace([1],'Yes')
+    df2['Count'] = 1
 
-    st.write(df)
+    df2 = df2.sort_values(
+        by=['stroke'],
+        ascending=False).iloc[0:len(df2[df2['stroke']=='Yes'])*2]
+
+    da_col1, da_col2 = st.columns(2)
+
+    with da_col1:
+        st.write('1.1. Dataset Sample')
+        st.dataframe(df2.drop('Count', axis=1), height=550)
+
+    with da_col2:
+        st.write('1.2. Data Analysis Section')
+        selection = st.selectbox('Choose your chart selection:', (df2.columns[0:-1].to_list()))
+        if selection != '':
+            fig = px.histogram(df2, x=selection, y='Count', title='Count of people with or without a Stroke based on {}'.format(selection), color='stroke', barmode='group')
+            st.plotly_chart(fig)
 
     cleanup_vals = {"gender": {"Male": 0, "Female": 1},
                     "ever_married": {"No": 0, "Yes": 1},
@@ -213,36 +210,72 @@ def stroke_function():
     # predict_df['bmi']=predict_df['bmi'].apply(lambda x: x * 10)
 
     df = df.replace(cleanup_vals)
-    
+    df = df.drop(columns=['Count'], axis=1)
 
     y=df['stroke']
     x=df.drop('stroke',axis=1)
 
-    st.markdown('**1.2. Data Splits**')
-    st.write('Training Set')
-    st.info(x.shape)
+    x_train,x_test,y_train,y_test=tts(x,y,test_size=0.25)
 
-    st.markdown('**1.3. Variable Details**')
-    st.write('Data Columns')
-    st.info(list(x.columns))
+    rf = RandomForestClassifier(n_estimators=25, random_state=0)
+    rf.fit(x_train, y_train)  
 
-    x_train,x_test,y_train,y_test=tts(x,y,test_size=0.3)
+    st.subheader('2. Model ')
+    ml_col1, ml_col2, ml_col3, ml_col4 = st.columns(4)
 
-    rf = RandomForestClassifier(n_estimators=250, random_state=0)
-    rf.fit(x_train, y_train)    
+    with ml_col1:
+        st.write('Length of Training Dataset')
+        st.info(len(x_train))
 
-    st.subheader('2. Model Performance')
+    with ml_col2:
+        st.write('Length of Testing Dataset')
+        st.info(len(x_test))
 
-    y_pred = rf.predict(x_test)
-    st.write('Accuracy Score:')
-    st.info(accuracy_score(y_test, y_pred))
+    with ml_col3:
+        y_pred = rf.predict(x_test)
+        st.write('Accuracy Score:')
+        st.info(accuracy_score(y_test, y_pred))
 
-    predict_df = predict_df.replace(cleanup_vals)
+    ### INPUT DATA SECTION ###
+    st.subheader('3. Data Input Prediction ')
+    
+    # Create 3 columns for the inputs to be aligned
+    with st.form(key='input form'):
+        inp_col1, inp_col2, inp_col3 = st.columns(3)
+        with inp_col1:
+            test_age=st.text_input('Age:', max_chars=3)
+            test_Avg_GlucLvl=st.text_input('Average Glucose Level:', max_chars=6)
+            test_BMI=st.text_input('BMI:', max_chars=4)
 
-    st.write('Prediction Score:') 
-    if st.sidebar.button('Confirm'):
-        msg = 'There is a %' + str(round(rf.predict_proba(predict_df)[0][0] *100, 2)) + ' chance patient will have/had a stroke'
-        st.error(msg)
+        with inp_col2:
+            test_Hypertension=st.select_slider('Hypertension: (0 for no hypertension, 1 for hypertension)',options=[0,1])
+            test_Heart_Disease=st.select_slider('Heart Disease: (0 for no Heart Disease, 1 for Heart Disease)',options=[0,1])
+            test_Work_Type=st.select_slider('Work Type:', options=['Never_worked','children', 'Self-employed', 'Private', 'Govt_job'])
+            test_Smoking_Status=st.select_slider('Smoking Status:', options=['Unknown', 'never smoked', 'formerly smoked', 'smokes'])
+
+        with inp_col3:
+            test_sex=st.radio('Sex:',options=['Male','Female'])
+            test_Residence_Type=st.radio('Residence Type:', options=['Urban', 'Rural'])
+            test_Ever_Married=st.radio('Ever Married:', options=['No','Yes'])
+
+        if st.form_submit_button('Confirm'):     
+            predict_data={'age':[test_age],
+                        'gender':[test_sex],
+                        'hypertension':[test_Hypertension],
+                        'heart_disease':[test_Heart_Disease],
+                        'ever_married':[test_Ever_Married],
+                        'work_type':[test_Work_Type],
+                        'Residence_type':[test_Residence_Type],
+                        'avg_glucose_level':[test_Avg_GlucLvl],
+                        'bmi':[test_BMI],
+                        'smoking_status':[test_Smoking_Status]}    
+
+            predict_df= pd.DataFrame(predict_data)
+
+            predict_df = predict_df.replace(cleanup_vals)
+
+            msg = 'There is a % {} chance patient will have/had a stroke'.format(round(rf.predict_proba(predict_df)[0][0] *100, 2))
+            st.error(msg)
 
 # If the button is pressed, the boolean stored in the session state changes to true, which in this case we call the function
 if st.session_state['bool_heart_disease']:
