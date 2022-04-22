@@ -141,7 +141,8 @@ def heart_disease_function():
             test_sex=st.radio('Sex:',options=['M','F'])
             test_ExA=st.radio('Exercise Angina:', options=['N','Y'])
 
-        if st.form_submit_button('Confirm'):
+        submitted = st.form_submit_button('Confirm')
+        if submitted:
             predict_data={'Age':[test_age],
                     'Sex':[test_sex],
                     'ChestPainType':[test_CPT],
