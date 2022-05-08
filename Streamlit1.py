@@ -74,7 +74,7 @@ def heart_disease_function():
 
     with da_col2:
         st.write('1.2. Data Analysis Section')
-        selection = st.selectbox('Choose your chart selection:', (df2.columns[0:-1].to_list()))
+        selection = st.selectbox('Choose your chart selection:', (df2.columns[0:-2].to_list()))
         if selection != '':
             fig = px.histogram(df2, x=selection, y='Count', title='Count of people with or without a Heart Disease based on {}'.format(selection), color='HeartDisease', barmode='group')
             st.plotly_chart(fig)
@@ -197,7 +197,7 @@ def stroke_function():
 
     with da_col2:
         st.write('1.2. Data Analysis Section')
-        selection = st.selectbox('Choose your chart selection:', (df2.columns[0:-1].to_list()))
+        selection = st.selectbox('Choose your chart selection:', (df2.columns[0:-2].to_list()))
         if selection != '':
             fig = px.histogram(df2, x=selection, y='Count', title='Count of people with or without a Stroke based on {}'.format(selection), color='stroke', barmode='group')
             st.plotly_chart(fig)
