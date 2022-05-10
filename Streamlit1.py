@@ -24,10 +24,6 @@ if 'bool_heart_disease' not in st.session_state:
 if 'bool_stroke' not in st.session_state:
     st.session_state['bool_stroke']=False
 
-# Import Data
-df1 = pd.read_csv('heart.csv')
-
-
 # Create two Columns, use only one to the left for better aesthetics
 col1, col2, col3 = st.columns(3)
 
@@ -47,18 +43,20 @@ with col1:
         st.session_state['bool_heart_disease']=False   
 
 def heart_disease_function():
+    df = pd.read_csv('heart.csv')
+
     st.subheader('1. Dataset')
     
     # ### Data Cleaning
-    new_df = df1[df1['Cholesterol'] != 0]
+    new_df = df[df['Cholesterol'] != 0]
     new_df = new_df[new_df['RestingBP'] != 0]
-    df1['Cholesterol'] = df1['Cholesterol'].replace(0, new_df['Cholesterol'].mean())
-    df1['RestingBP'] = df1['RestingBP'].replace(0, new_df['RestingBP'].mean())
+    df['Cholesterol'] = df['Cholesterol'].replace(0, new_df['Cholesterol'].mean())
+    df['RestingBP'] = df['RestingBP'].replace(0, new_df['RestingBP'].mean())
     ###
 
     ### Data Analysis Section ###
     
-    df2 = df1
+    df2 = df
 
     df2['HeartDisease'] = df2['HeartDisease'].replace([0],'No')
     df2['HeartDisease'] = df2['HeartDisease'].replace([1],'Yes')
@@ -89,13 +87,13 @@ def heart_disease_function():
                     "ExerciseAngina" : {"Y": 0, "N": 1},
                     "ST_Slope": {"Up": 0, "Flat": 1, "Down": 2}}
 
-    df1['Oldpeak']=df1['Oldpeak'].apply(lambda x: x + 2.6)
-    df1['Oldpeak']=df1['Oldpeak'].apply(lambda x: x * 10)
-    df1 = df1.replace(cleanup_vals)
-    df1 = df1.drop('Count', axis=1)
+    df['Oldpeak']=df['Oldpeak'].apply(lambda x: x + 2.6)
+    df['Oldpeak']=df['Oldpeak'].apply(lambda x: x * 10)
+    df = df.replace(cleanup_vals)
+    df = df.drop('Count', axis=1)
 
-    y=df1['HeartDisease']
-    x=df1.drop('HeartDisease',axis=1)
+    y=df['HeartDisease']
+    x=df.drop('HeartDisease',axis=1)
 
     x_train,x_test,y_train,y_test=tts(x,y,test_size=0.3)
     
