@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+import random
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split as tts
@@ -42,6 +43,33 @@ with col1:
         st.session_state['bool_stroke']=True
         st.session_state['bool_heart_disease']=False   
 
+df_heart = pd.read_csv('heart.csv')
+
+# ### Data Cleaning
+new_df = df_heart[df_heart['Cholesterol'] != 0]
+new_df = new_df[new_df['RestingBP'] != 0]
+df_heart['Cholesterol'] = df_heart['Cholesterol'].replace(0, new_df['Cholesterol'].mean())
+df_heart['Cholesterol']=df_heart['Cholesterol'].apply(lambda x: x + random.randrange(-50, 50))
+df_heart['RestingBP'] = df_heart['RestingBP'].replace(0, new_df['RestingBP'].mean())
+
+cleanup_vals = {"Sex": {"M": 0, "F": 1},
+                    "ChestPainType": {"TA": 0, "ATA": 1, "NAP": 2, "ASY": 3},
+                    "RestingECG": {"Normal": 0, "ST": 1, "LVH": 2},
+                    "ExerciseAngina" : {"Y": 0, "N": 1},
+                    "ST_Slope": {"Up": 0, "Flat": 1, "Down": 2}}
+
+df_heart['Oldpeak']=df_heart['Oldpeak'].apply(lambda x: x + 2.6)
+df_heart['Oldpeak']=df_heart['Oldpeak'].apply(lambda x: x * 10)
+df_heart = df_heart.replace(cleanup_vals)
+
+y=df_heart['HeartDisease']
+x=df_heart.drop('HeartDisease',axis=1)
+
+x_train,x_test,y_train,y_test=tts(x,y,test_size=0.33)
+
+rf_heart = RandomForestClassifier(n_estimators=25, random_state=0)
+rf_heart.fit(x_train, y_train)
+
 def heart_disease_function():
     df = pd.read_csv('heart.csv')
 
@@ -51,6 +79,7 @@ def heart_disease_function():
     new_df = df[df['Cholesterol'] != 0]
     new_df = new_df[new_df['RestingBP'] != 0]
     df['Cholesterol'] = df['Cholesterol'].replace(0, new_df['Cholesterol'].mean())
+    df['Cholesterol']=df['Cholesterol'].apply(lambda x: x + random.randrange(-50, 50))
     df['RestingBP'] = df['RestingBP'].replace(0, new_df['RestingBP'].mean())
     ###
 
@@ -81,21 +110,7 @@ def heart_disease_function():
 
     ###
 
-    cleanup_vals = {"Sex": {"M": 0, "F": 1},
-                    "ChestPainType": {"TA": 0, "ATA": 1, "NAP": 2, "ASY": 3},
-                    "RestingECG": {"Normal": 0, "ST": 1, "LVH": 2},
-                    "ExerciseAngina" : {"Y": 0, "N": 1},
-                    "ST_Slope": {"Up": 0, "Flat": 1, "Down": 2}}
-
-    df['Oldpeak']=df['Oldpeak'].apply(lambda x: x + 2.6)
-    df['Oldpeak']=df['Oldpeak'].apply(lambda x: x * 10)
-    df = df.replace(cleanup_vals)
     df = df.drop('Count', axis=1)
-
-    y=df['HeartDisease']
-    x=df.drop('HeartDisease',axis=1)
-
-    x_train,x_test,y_train,y_test=tts(x,y,test_size=0.3)
     
     # st.markdown('**1.2. Data Splits**')
     # st.write('Training Set')
@@ -104,9 +119,6 @@ def heart_disease_function():
     # st.markdown('**1.3. Variable Details**')
     # st.write('Data Columns')
     # st.info(list(x.columns))
-
-    rf = RandomForestClassifier(n_estimators=250, random_state=0)
-    rf.fit(x_train, y_train)
 
     st.subheader('2. Model ')
     ml_col1, ml_col2, ml_col3, ml_col4 = st.columns(4)
@@ -120,7 +132,7 @@ def heart_disease_function():
         st.info(len(x_test))
 
     with ml_col3:
-        y_pred = rf.predict(x_test)
+        y_pred = rf_heart.predict(x_test)
         st.write('Accuracy Score:')
         st.info(accuracy_score(y_test, y_pred))
 
@@ -165,7 +177,7 @@ def heart_disease_function():
             predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x + 2.6)
             predict_df['Oldpeak']=predict_df['Oldpeak'].apply(lambda x: x * 10)
             predict_df = predict_df.replace(cleanup_vals)
-            msg = 'There is a % {} patient has a heart disease'.format(round(rf.predict_proba(predict_df)[0][1] *100, 2))
+            msg = 'There is a % {} patient has a heart disease'.format(round(rf_heart.predict_proba(predict_df)[0][1] *100, 2))
             st.error(msg)     
 
 def stroke_function():
